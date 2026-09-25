@@ -153,6 +153,14 @@ The command reads the selected browser's GitHub `user_session` once and stores i
 gh attach <file> -R owner/repo --session-keychain
 ```
 
+If macOS prevents the local helper from reading Chrome Safe Storage, export only the `github.com` cookies from the signed-in browser and import that export once instead:
+
+```sh
+gh attach auth import --cookie-file /path/to/github-cookies.json
+```
+
+The export file is a credential: keep it local, do not attach it to an Issue or PR, and delete it after a successful import. `auth import` accepts either a JSON cookie array or an object containing a `cookies` array; it extracts only `user_session` and never prints the value.
+
 If the Keychain item is unavailable or the session has expired, the upload stops and asks for re-authentication. It does not fall back to browser-cookie discovery. Do not use this mode for credentials other than the dedicated GitHub evidence session.
 
 ## Supported Browsers

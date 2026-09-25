@@ -19,7 +19,29 @@ var storeEvidenceSession = app.StoreSystemEvidenceSession
 
 func NewCmdAuth() *cobra.Command {
 	cmd := &cobra.Command{Use: "auth", Short: "Manage the dedicated headless evidence session"}
-	cmd.AddCommand(NewCmdAuthCapture())
+	cmd.AddCommand(NewCmdAuthCapture(), NewCmdAuthImport())
+	return cmd
+}
+
+func NewCmdAuthImport() *cobra.Command {
+	var cookieFile string
+	cmd := &cobra.Command{
+		Use:   "import",
+		Short: "Import a GitHub browser-cookie export into the dedicated macOS Keychain item",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			token, err := app.ReadEvidenceSessionExport(cookieFile)
+			if err != nil {
+				return err
+			}
+			if err := storeEvidenceSession(token); err != nil {
+				return err
+			}
+			fmt.Fprintln(cmd.OutOrStdout(), "Stored the headless evidence session in macOS Keychain.")
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&cookieFile, "cookie-file", "", "Cookie export JSON file")
+	_ = cmd.MarkFlagRequired("cookie-file")
 	return cmd
 }
 

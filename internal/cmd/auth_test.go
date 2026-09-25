@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"errors"
+	"os"
 	"strings"
 	"testing"
 )
@@ -39,5 +40,30 @@ func TestAuthCaptureDoesNotStoreWhenCaptureFails(t *testing.T) {
 	cmd.SetArgs([]string{"--browser", "chrome"})
 	if err := cmd.Execute(); err == nil {
 		t.Fatal("Execute() error = nil")
+	}
+}
+
+func TestAuthImportStoresWithoutWritingToken(t *testing.T) {
+	previousStore := storeEvidenceSession
+	stored := ""
+	storeEvidenceSession = func(value string) error { stored = value; return nil }
+	t.Cleanup(func() { storeEvidenceSession = previousStore })
+
+	path := t.TempDir() + "/cookies.json"
+	if err := os.WriteFile(path, []byte(`[{"name":"user_session","value":"secret-token","domain":".github.com","path":"/"}]`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var output bytes.Buffer
+	cmd := NewCmdAuthImport()
+	cmd.SetOut(&output)
+	cmd.SetArgs([]string{"--cookie-file", path})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+	if stored != "secret-token" {
+		t.Fatalf("stored = %q", stored)
+	}
+	if strings.Contains(output.String(), "secret-token") {
+		t.Fatalf("output leaked token: %q", output.String())
 	}
 }

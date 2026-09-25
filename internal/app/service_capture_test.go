@@ -14,7 +14,7 @@ func TestCaptureBrowserSessionTokenDoesNotRequireDotcomUser(t *testing.T) {
 	service := NewService(nil)
 	service.providers = map[cookies.Browser]browserprovider.BrowserProvider{
 		cookies.BrowserChrome: stubProvider{sessions: []browserprovider.BrowserSession{{
-			Browser: cookies.BrowserChrome,
+			Browser: string(cookies.BrowserChrome),
 			Cookies: []*http.Cookie{{
 				Name:   "user_session",
 				Value:  "session-value",
@@ -42,7 +42,7 @@ func TestCaptureBrowserSessionTokenRejectsSessionWithoutUserSession(t *testing.T
 	service := NewService(nil)
 	service.providers = map[cookies.Browser]browserprovider.BrowserProvider{
 		cookies.BrowserChrome: stubProvider{sessions: []browserprovider.BrowserSession{{
-			Browser: cookies.BrowserChrome,
+			Browser: string(cookies.BrowserChrome),
 			Cookies: []*http.Cookie{{Name: "dotcom_user", Value: "monokaai", Domain: ".github.com", Path: "/"}},
 		}}},
 	}

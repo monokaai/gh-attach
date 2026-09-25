@@ -36,7 +36,7 @@ func NewCmdDownload(runF func(*DownloadOptions) error) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.URL = args[0]
 			var err error
-			opts.SessionToken, err = sessionToken(cmd, opts.SessionToken)
+			opts.SessionToken, err = sessionToken(cmd, opts.SessionToken, false)
 			if err != nil {
 				return err
 			}

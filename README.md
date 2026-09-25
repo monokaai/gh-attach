@@ -139,6 +139,22 @@ browsers:
 - `profile`: Browser profile name/path (Optional, name or path)
 - `cookie_store_path`: Explicit cookie DB file path (Optional)
 
+## Headless evidence uploads on macOS
+
+For a development machine that continues working while its screen is locked, register a dedicated GitHub session while the screen is unlocked:
+
+```sh
+gh attach auth capture --browser chrome --profile <profile-name>
+```
+
+The command reads the selected browser's GitHub `user_session` once and stores it in the macOS Keychain under a dedicated service. It never prints the value. Later, a headless evidence runner can upload without reading a browser profile:
+
+```sh
+gh attach <file> -R owner/repo --session-keychain
+```
+
+If the Keychain item is unavailable or the session has expired, the upload stops and asks for re-authentication. It does not fall back to browser-cookie discovery. Do not use this mode for credentials other than the dedicated GitHub evidence session.
+
 ## Supported Browsers
 
 - Chromium family (Arc, Atlas, Brave, Chrome, Chromium, Comet, Dia, Edge, Helium, Opera, Vivaldi, Whale)

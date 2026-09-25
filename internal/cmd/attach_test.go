@@ -157,3 +157,25 @@ func TestNewCmdAttach_RejectsEmptySessionTokenEnvironment(t *testing.T) {
 		t.Fatalf("Execute() error = %v, want empty token error", err)
 	}
 }
+
+func TestNewCmdAttach_UsesDedicatedKeychainSession(t *testing.T) {
+	previous := readEvidenceSession
+	readEvidenceSession = func() (string, error) { return "keychain-token", nil }
+	t.Cleanup(func() { readEvidenceSession = previous })
+
+	var got string
+	cmd := NewCmdAttach(func(opts *AttachOptions) error {
+		got = opts.SessionToken
+		return nil
+	})
+	cmd.SetArgs([]string{"image.png", "--session-keychain"})
+	cmd.SetOut(io.Discard)
+	cmd.SetErr(io.Discard)
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+	if got != "keychain-token" {
+		t.Fatalf("SessionToken = %q, want keychain-token", got)
+	}
+}

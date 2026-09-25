@@ -102,6 +102,19 @@ func (s *Service) Run(ctx context.Context, req Request) ([]attachments.Asset, er
 	})
 }
 
+func (s *Service) CaptureBrowserSessionToken(ctx context.Context, host string, input cookies.ResolveInput, verbose bool) (string, error) {
+	session, err := s.resolveBrowserSession(ctx, host, input, verbose)
+	if err != nil {
+		return "", err
+	}
+	for _, cookie := range session.Cookies {
+		if cookie.Name == "user_session" && cookie.Value != "" {
+			return cookie.Value, nil
+		}
+	}
+	return "", errors.New("browser session does not contain user_session")
+}
+
 const maxConcurrentUploads = 2
 
 func uploadFiles(filePaths []string, upload func(string) (attachments.Asset, error)) ([]attachments.Asset, error) {

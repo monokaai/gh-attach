@@ -13,6 +13,8 @@ import (
 
 const sessionTokenEnv = "GH_ATTACH_SESSION_TOKEN"
 
+var readEvidenceSession = app.ReadSystemEvidenceSession
+
 type AttachOptions struct {
 	FilePaths       []string
 	Repo            string
@@ -20,6 +22,7 @@ type AttachOptions struct {
 	Profile         string
 	CookieStorePath string
 	SessionToken    string
+	SessionKeychain bool
 	Markdown        bool
 	JSON            jsonFlags
 	Verbose         bool
@@ -51,7 +54,7 @@ func newCmdUpload(use string, runF func(*AttachOptions) error) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.FilePaths = args
 			var err error
-			opts.SessionToken, err = sessionToken(cmd, opts.SessionToken)
+			opts.SessionToken, err = sessionToken(cmd, opts.SessionToken, opts.SessionKeychain)
 			if err != nil {
 				return err
 			}
@@ -67,6 +70,7 @@ func newCmdUpload(use string, runF func(*AttachOptions) error) *cobra.Command {
 	cmd.Flags().StringVar(&opts.Profile, "profile", "", "Browser profile name")
 	cmd.Flags().StringVar(&opts.CookieStorePath, "cookie-store-path", "", "Cookie store file path")
 	cmd.Flags().StringVar(&opts.SessionToken, "session-token", "", "GitHub user_session cookie value")
+	cmd.Flags().BoolVar(&opts.SessionKeychain, "session-keychain", false, "Use the dedicated macOS Keychain session for headless evidence uploads")
 	cmd.Flags().BoolVar(&opts.Markdown, "markdown", false, "Output Markdown references")
 	cmd.Flags().BoolVarP(&opts.Verbose, "verbose", "v", false, "Verbose output")
 
@@ -74,12 +78,17 @@ func newCmdUpload(use string, runF func(*AttachOptions) error) *cobra.Command {
 	cmd.MarkFlagsMutuallyExclusive("markdown", "json")
 	for _, name := range []string{"browser", "profile", "cookie-store-path"} {
 		cmd.MarkFlagsMutuallyExclusive("session-token", name)
+		cmd.MarkFlagsMutuallyExclusive("session-keychain", name)
 	}
+	cmd.MarkFlagsMutuallyExclusive("session-token", "session-keychain")
 
 	return cmd
 }
 
-func sessionToken(cmd *cobra.Command, flagValue string) (string, error) {
+func sessionToken(cmd *cobra.Command, flagValue string, useKeychain bool) (string, error) {
+	if useKeychain {
+		return readEvidenceSession()
+	}
 	value, ok := flagValue, cmd.Flags().Changed("session-token")
 	if !ok {
 		for _, name := range []string{"browser", "profile", "cookie-store-path"} {

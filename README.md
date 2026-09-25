@@ -1,3 +1,11 @@
+> [!IMPORTANT]
+> This fork is deprecated and retained only as a read-only rollback reference.
+> RidgeHalo has migrated Evidence uploads to the official GitHub CLI
+> `gh issue comment --attach` and `gh pr comment --attach` options. Do not use
+> this fork's browser-cookie or session-token upload paths for new automation.
+>
+> Migration record: https://github.com/ridgehalo/product-development-control-plane/issues/159
+
 <div align="center">
 
 # gh-attach

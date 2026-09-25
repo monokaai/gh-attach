@@ -103,13 +103,29 @@ func (s *Service) Run(ctx context.Context, req Request) ([]attachments.Asset, er
 }
 
 func (s *Service) CaptureBrowserSessionToken(ctx context.Context, host string, input cookies.ResolveInput, verbose bool) (string, error) {
-	session, err := s.resolveBrowserSession(ctx, host, input, verbose)
+	sources, err := cookies.ResolveSources(input)
 	if err != nil {
 		return "", err
 	}
-	for _, cookie := range session.Cookies {
-		if cookie.Name == "user_session" && cookie.Value != "" {
-			return cookie.Value, nil
+
+	for _, source := range sources {
+		for _, candidate := range cookies.ExpandSource(source) {
+			candidate = cookies.ApplyDefaultProfile(candidate)
+			provider, ok := s.providers[candidate.Browser]
+			if !ok {
+				continue
+			}
+
+			sessions, loadErr := provider.Load(ctx, host, candidate)
+			if loadErr != nil {
+				continue
+			}
+			for _, session := range sessions {
+				values := cookies.ValuesForHost(session.Cookies, "user_session", host)
+				if len(values) > 0 {
+					return values[0], nil
+				}
+			}
 		}
 	}
 	return "", errors.New("browser session does not contain user_session")

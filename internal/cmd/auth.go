@@ -43,5 +43,6 @@ func NewCmdAuthCapture() *cobra.Command {
 	cmd.Flags().StringVar(&browser, "browser", "", "Browser to capture from ("+cookies.BrowserChoices()+")")
 	cmd.Flags().StringVar(&profile, "profile", "", "Browser profile name")
 	cmd.Flags().StringVar(&cookieStorePath, "cookie-store-path", "", "Cookie store file path")
+	_ = cmd.MarkFlagRequired("browser")
 	return cmd
 }

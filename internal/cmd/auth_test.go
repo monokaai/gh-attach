@@ -17,6 +17,7 @@ func TestAuthCaptureStoresWithoutWritingToken(t *testing.T) {
 	var output bytes.Buffer
 	cmd := NewCmdAuthCapture()
 	cmd.SetOut(&output)
+	cmd.SetArgs([]string{"--browser", "chrome"})
 	if err := cmd.Execute(); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
@@ -34,7 +35,9 @@ func TestAuthCaptureDoesNotStoreWhenCaptureFails(t *testing.T) {
 	storeEvidenceSession = func(string) error { t.Fatal("store was called"); return nil }
 	t.Cleanup(func() { captureBrowserSession, storeEvidenceSession = previousCapture, previousStore })
 
-	if err := NewCmdAuthCapture().Execute(); err == nil {
+	cmd := NewCmdAuthCapture()
+	cmd.SetArgs([]string{"--browser", "chrome"})
+	if err := cmd.Execute(); err == nil {
 		t.Fatal("Execute() error = nil")
 	}
 }

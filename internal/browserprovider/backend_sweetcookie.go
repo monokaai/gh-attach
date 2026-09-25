@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	libsweetcookie "github.com/steipete/sweetcookie"
@@ -50,6 +51,9 @@ func (*sweetcookieBackend) loadMerged(ctx context.Context, host string, source c
 		return nil, err
 	}
 	if len(result.Cookies) == 0 {
+		if len(result.Warnings) > 0 {
+			return nil, fmt.Errorf("no cookies found: %s", strings.Join(result.Warnings, "; "))
+		}
 		return nil, fmt.Errorf("no cookies found")
 	}
 
